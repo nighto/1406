@@ -3,20 +3,21 @@
 <head>
 	<meta charset="utf-8">
 	<title>1406</title>
+	<style>
+
+.codigo {
+	text-decoration: underline;
+}
+
+	</style>
 	<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 	<script>
 
-//http://200.222.65.84:8080/pcrj_ws_mobile/WsMobile.asmx/MeusProtocolos?__xmlMeusProtocolos=%3CmeusProtocolos%3E%3CnomeSolicitante%3EArlindo%20Saraiva%20Pereira%20Junior%3C/nomeSolicitante%3E%3Ctelefone%3E2192504072%3C/telefone%3E%3C/meusProtocolos%3E
-
-//var endpointURL = 'http://200.222.65.84:8080/pcrj_ws_mobile/WsMobile.asmx/';
-
 var meusProtocolos = function(nome, telefone){
-	//var endpointPath = 'MeusProtocolos?__xmlMeusProtocolos=';
 	var endpointPath = '__xmlMeusProtocolos=';
 	var strXML = '<meusProtocolos><nomeSolicitante>'+nome+'</nomeSolicitante><telefone>'+telefone+'</telefone></meusProtocolos>';
 
-	//var _url = endpointURL+endpointPath+strXML;
-	var _url = 'proxy.php?'+endpointPath+strXML;
+	var _url = 'MeusProtocolos.php?'+endpointPath+strXML;
 
 	$.ajax({
 		url: _url,
@@ -35,10 +36,10 @@ var handleMeusProtocolos = function(xml){
 		var dataFim = $(this).find('fim').text();
 		
 		var statusProtocolo = 'fechado';
-		if(dataFim = '')
+		if(dataFim == '')
 			statusProtocolo = 'aberto';
 
-		_html += '<li>Protocolo: '+codigo+' - Status: '+statusProtocolo+' - Data de abertura: '+dataInicio;
+		_html += '<li>Protocolo: <span class="codigo">'+codigo+'</span> - Status: '+statusProtocolo+' - Data de abertura: '+dataInicio;
 		if(statusProtocolo == 'fechado')
 			_html += ' - Data de encerramento: '+dataFim;
 		_html += '</li>';
@@ -47,6 +48,65 @@ var handleMeusProtocolos = function(xml){
 	_html += '</ul>';
 
 	$('body').append(_html);
+
+	$('.codigo').on('click', function(){
+		$(this).off('click');
+		recuperaProtocolo( $(this) );
+	})
+};
+
+var recuperaProtocolo = function($codigo){
+	var codigo = $codigo.text();
+
+	var endpointPath = 'xmlNumeroProcolo=';
+	var strXML = '<RecuperaChamados><codigoProtocolo>'+codigo+'</codigoProtocolo></RecuperaChamados>';
+
+	var _url = 'MobileChamadosDetalhadosProtocolo.php?'+endpointPath+strXML;
+
+	$.ajax({
+		url: _url,
+		success: function(data){
+			handleRecuperaProtocolo(data, $codigo);
+		}
+	});
+};
+
+var handleRecuperaProtocolo = function(xml, $codigo){
+	var protocolosXml = $.parseXML( $(xml)[2].innerText );
+
+	var _html = '<h3>Status:</h3>';
+	
+	$(protocolosXml).find('retornoChamadosDetalhadosProtocoloMobile').each(function(){
+		$(this).children().each(function(){
+			var tagName  = this.tagName;
+
+			if(tagName == 'chamados'){
+				_html += '<h4>Chamados</h4>';
+				$(this).children().each(function(){
+					$(this).children().each(function(){
+						var tagName  = this.tagName;
+
+						if(tagName == 'classificacao' || tagName == 'endereco'){
+							_html += '<h5>'+tagName+'</h5>';
+							$(this).children().each(function(){
+								var tagName  = this.tagName;
+								var tagValue = $(this).text();
+								_html += '<b>'+tagName+': '+tagValue+'<br>';
+							});
+						}else{
+							var tagValue = $(this).text();
+							_html += '<b>'+tagName+': '+tagValue+'<br>';
+						}
+					});
+				});
+			}else{
+				var tagValue = $(this).text();
+				_html += '<b>'+tagName+': '+tagValue+'<br>';
+			}
+		})
+	});
+
+	$codigo.parent().after(_html);
 };
 
 $(document).ready(function(){
