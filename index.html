@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>1406</title>
+	<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+	<script>
+
+//http://200.222.65.84:8080/pcrj_ws_mobile/WsMobile.asmx/MeusProtocolos?__xmlMeusProtocolos=%3CmeusProtocolos%3E%3CnomeSolicitante%3EArlindo%20Saraiva%20Pereira%20Junior%3C/nomeSolicitante%3E%3Ctelefone%3E2192504072%3C/telefone%3E%3C/meusProtocolos%3E
+
+//var endpointURL = 'http://200.222.65.84:8080/pcrj_ws_mobile/WsMobile.asmx/';
+
+var meusProtocolos = function(nome, telefone){
+	//var endpointPath = 'MeusProtocolos?__xmlMeusProtocolos=';
+	var endpointPath = '__xmlMeusProtocolos=';
+	var strXML = '<meusProtocolos><nomeSolicitante>'+nome+'</nomeSolicitante><telefone>'+telefone+'</telefone></meusProtocolos>';
+
+	//var _url = endpointURL+endpointPath+strXML;
+	var _url = 'proxy.php?'+endpointPath+strXML;
+
+	$.ajax({
+		url: _url,
+		success: handleMeusProtocolos
+	});
+};
+
+var handleMeusProtocolos = function(xml){
+	var protocolosXml = $.parseXML( $(xml)[2].innerText );
+
+	var _html = '<h2>Protocolos:</h2><ul>';
+	
+	$(protocolosXml).find('protocolo').each(function(){
+		var codigo = $(this).find('codigo').text();
+		var dataInicio = $(this).find('inicio').text();
+		var dataFim = $(this).find('fim').text();
+		
+		var statusProtocolo = 'fechado';
+		if(dataFim = '')
+			statusProtocolo = 'aberto';
+
+		_html += '<li>Protocolo: '+codigo+' - Status: '+statusProtocolo+' - Data de abertura: '+dataInicio;
+		if(statusProtocolo == 'fechado')
+			_html += ' - Data de encerramento: '+dataFim;
+		_html += '</li>';
+	});
+
+	_html += '</ul>';
+
+	$('body').append(_html);
+};
+
+$(document).ready(function(){
+	$('#procura').on('click', function(){
+		var nome     = $('#nome').val();
+		var telefone = $('#telefone').val();
+		meusProtocolos(nome, telefone);
+	});
+});
+
+	</script>
+</head>
+<body>
+	<h1>1406</h1>
+	<label for="nome">Nome completo: </label>
+	<input type="text" id="nome" value="Arlindo Saraiva Pereira Junior"><br>
+	<label for="telefone">Tel (21nnnnnnnn): </label>
+	<input type="text" id="telefone" value="2192504072">
+	<button id="procura">Vai</button>
+	<footer>Nota: Este site não é associado com o 1746.</footer>
+</body>
+</html>
