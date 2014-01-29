@@ -14,14 +14,14 @@ var handleMeusProtocolos = function(xml){
     var protocolosXml = $.parseXML( $(xml)[2].innerText );
 
     var _html = '<h2>Protocolos:</h2><ul>';
-    
+
     $(protocolosXml).find('protocolo').each(function(){
         var codigo = $(this).find('codigo').text();
         var dataInicio = $(this).find('inicio').text();
         var dataFim = $(this).find('fim').text();
-        
+
         var statusProtocolo = 'fechado';
-        if(dataFim == '')
+        if(dataFim === '')
             statusProtocolo = 'aberto';
 
         _html += '<li>Protocolo: <span class="codigo">'+codigo+'</span> - Status: '+statusProtocolo+' - Data de abertura: '+dataInicio;
@@ -37,7 +37,7 @@ var handleMeusProtocolos = function(xml){
     $('.codigo').on('click', function(){
         $(this).off('click');
         recuperaProtocolo( $(this) );
-    })
+    });
 };
 
 var recuperaProtocolo = function($codigo){
@@ -60,7 +60,7 @@ var handleRecuperaProtocolo = function(xml, $codigo){
     var protocolosXml = $.parseXML( $(xml)[2].innerText );
 
     var _html = '<h3>Status:</h3>';
-    
+
     $(protocolosXml).find('retornoChamadosDetalhadosProtocoloMobile').each(function(){
         $(this).children().each(function(){
             var tagName  = this.tagName;
@@ -88,7 +88,7 @@ var handleRecuperaProtocolo = function(xml, $codigo){
                 var tagValue = $(this).text();
                 _html += '<b>'+tagName+': '+tagValue+'<br>';
             }
-        })
+        });
     });
 
     $codigo.parent().after(_html);
